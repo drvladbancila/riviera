@@ -1,0 +1,15 @@
+[package]
+name = "riviera"
+version = "0.1.0"
+edition = "2021"
+author = "Vlad George Bancila"
+repository = "https://github.com/drvladbancila/riviera"
+description = "riviera is a RISC-V emulator written in Rust"
+license = "Apache-2.0"
+keywords = ["emulator", "riscv"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+colored = "2.0.0"
+clap = { version = "4.0.22", features = ["derive"] }
