@@ -58,7 +58,7 @@ impl Emulator {
         self.cpu.write_reg(Cpu::RETURN_REGISTER, Cpu::SENTINEL_RETURN_ADDRESS);
 
         // Set SP to the last address in the DRAM
-        self.cpu.set_stack_pointer(addr_space.read_write_segment as u64 + self.cpu.get_read_write_memsize() as u64 - 1);
+        self.cpu.set_stack_pointer(addr_space.read_write_segment as u64 + self.cpu.get_read_write_memsize() as u64);
 
         // Set GP to the middle address in the DRAM
         // TODO: check if this is correct? Seems like it is, but not 100% sure
