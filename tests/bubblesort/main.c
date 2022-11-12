@@ -1,14 +1,14 @@
-#define N 5
+#define N 6
 
 void swap(int *a, int *b);
 void bubbleSort(int v[], int size);
 
 int main()
 {
-    int v1[N] = {4, 6, 2, 7, 8};
+    int v[N] = {5, 7, 2, 1, 8, 10};
     int i;
 
-    bubbleSort(v1, N);
+    bubbleSort(v, N);
 
     return 0;
 }
