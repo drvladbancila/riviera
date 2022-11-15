@@ -49,7 +49,7 @@ impl Emulator {
         self.cpu.store_from_buffer(&filebuffer[addr_space.read_write_offset..
                                                     addr_space.read_write_offset
                                                     + addr_space.read_write_size],
-                              addr_space.read_execute_segment as u64);
+                              addr_space.read_write_segment as u64);
 
         self.cpu.set_pc(entry);
 
