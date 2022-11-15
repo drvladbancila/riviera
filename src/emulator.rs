@@ -67,14 +67,15 @@ impl Emulator {
 
     }
 
-    pub fn run(&mut self, reg_dump_interval: u64) -> Duration {
+    pub fn run(&mut self, reg_dump_interval: u64) -> (Duration, u64) {
         let now = std::time::Instant::now();
+        let instruction_count: u64;
         if reg_dump_interval > 0 {
-            self.cpu.cpu_loop_with_reg_dump(reg_dump_interval)
+            instruction_count = self.cpu.cpu_loop_with_reg_dump(reg_dump_interval)
         } else {
-            self.cpu.cpu_loop();
+            instruction_count = self.cpu.cpu_loop();
         }
-        now.elapsed()
+        (now.elapsed(), instruction_count)
     }
 
     pub fn dump_memory_to_file(&self, filename: &str) {

@@ -53,6 +53,9 @@ fn main() {
     let args: CLIArguments = CLIArguments::parse();
     // Variable to store execution time for running the executable
     let execution_time: std::time::Duration;
+    // Executed instructions counter
+    let instr_count: u64;
+    let mips: f64;
     let mut emu: Emulator;
 
     // If a memory size was specified with the -m flag, allocate a 
@@ -70,13 +73,16 @@ fn main() {
     // If a register dump period was specified, run the CPU loop where
     // every N instructions the content of the register file is dumped
     if let Some(dump_reg_period) = args.registers {
-        execution_time = emu.run(dump_reg_period);
+        (execution_time, instr_count) = emu.run(dump_reg_period);
     } else {
-        execution_time = emu.run(0);
+        (execution_time, instr_count) = emu.run(0);
     }
 
     // If execution is over, print the total runtime
+    mips = (instr_count as f64/1e6)/execution_time.as_secs_f64();
     println!("{} Execution is over ({:.2?})", "[*]".green(), execution_time);
+    println!("{} T = {:.2?}, IC = {}, ({:.6?} MIPS)",
+             "[*]".green(), execution_time, instr_count, mips);
 
     // If the -d flag was used, dump all the DRAM in a binary file
     if let Some(dump_file) = args.dump.as_deref() {

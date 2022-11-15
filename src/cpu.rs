@@ -177,10 +177,11 @@ impl Cpu {
     }
 
     // Good ol' Fetch, Decode and Execute loop
-    pub fn cpu_loop(&mut self) {
+    pub fn cpu_loop(&mut self) -> u64 {
+        let mut count_instructions: u64 = 0;
         loop {
             if self.pc == Cpu::SENTINEL_RETURN_ADDRESS {
-                break;
+                break count_instructions;
             }
             // Fetch and instruction
             let fetched_instruction: Instruction = self.fetch();
@@ -193,14 +194,15 @@ impl Cpu {
             // The executed instruction might have changed the next PC
             // from the PC + 4 value, now assign next PC to PC
             self.pc = self.next_pc;
+            count_instructions += 1;
         }
     }
 
-    pub fn cpu_loop_with_reg_dump(&mut self, dump_period: u64) {
+    pub fn cpu_loop_with_reg_dump(&mut self, dump_period: u64) -> u64 {
         let mut count_instructions: u64 = 0;
         loop {
             if self.pc == Cpu::SENTINEL_RETURN_ADDRESS {
-                break;
+                break count_instructions;
             }
             // Fetch and instruction
             let fetched_instruction: Instruction = self.fetch();
@@ -214,7 +216,6 @@ impl Cpu {
 
             if count_instructions % dump_period == 0 {
                 self.dump_regs();
-                count_instructions = 0;
             }
 
             // The executed instruction might have changed the next PC
