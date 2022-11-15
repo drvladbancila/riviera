@@ -1,13 +1,20 @@
-#define N 6
+#include "../lfsr/lfsr.h"
+#define N 600
 
 void swap(int *a, int *b);
 void bubbleSort(int v[], int size);
 
-int main()
+int _start()
 {
-    int v[N] = {5, 7, 2, 1, 8, 10};
+    int v[N];
     int i;
 
+    /* Generate N random numbers */
+    for (i = 0; i < N; i++) {
+        v[i] = lfsr();
+    }
+
+    /* Sort the N random numbers */
     bubbleSort(v, N);
 
     return 0;
