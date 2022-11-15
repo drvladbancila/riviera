@@ -1,5 +1,5 @@
 #include "lfsr.h"
-#define START_STATE 0xF3AD
+#define START_STATE 0x33AAF3AD
 
 unsigned int lfsr(void) {
     static unsigned int lfsr = START_STATE;
