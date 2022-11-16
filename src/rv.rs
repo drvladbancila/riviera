@@ -205,7 +205,8 @@ fn decode_immediate_stype(imm5: u32, imm12: u32) -> i64 {
 // rd <- signed'imm[32:12] << 12
 #[inline(always)]
 fn lui(curcpu: &mut Cpu, rd: RegIndex, imm: u32) {
-    curcpu.write_reg(rd, (imm << 12) as u64);
+    let immediate: i64 = (imm << 12) as i32 as i64;
+    curcpu.write_reg(rd, immediate as u64);
 }
 
 // AUIPC instruction
