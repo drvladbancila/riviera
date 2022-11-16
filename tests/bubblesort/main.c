@@ -1,5 +1,5 @@
 #include "../lfsr/lfsr.h"
-#define N 600
+#define N 1000
 
 void swap(int *a, int *b);
 void bubbleSort(int v[], int size);

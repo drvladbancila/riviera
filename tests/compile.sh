@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Name of the folders that contain an executable test
-executable_tests=("bubblesort")
+executable_tests=("bubblesort" "quicksort")
 
 # Create folder for compiled tests
 if [[ ! -d ./compiled ]]; then
