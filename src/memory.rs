@@ -14,7 +14,7 @@ pub struct Memory {
 
 impl Memory {
     pub const DRAM_DEFAULT_SIZE: usize = 8 * 1024;
-    pub const ROM_DEFAULT_SIZE:  usize = 1 * 1024;
+    pub const ROM_DEFAULT_SIZE:  usize = 0;
 
     pub fn new(size: Option<usize>) -> Memory {
             match size {
