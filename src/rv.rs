@@ -1,9 +1,7 @@
 use crate::cpu::Instruction;
 use crate::cpu::RegIndex;
 use crate::cpu::Cpu;
-use crate::cpu::REG_FILE_NAMES;
 use crate::memory::AccessSize;
-use colored::Colorize;
 
 #[derive(PartialEq, Eq)]
 pub struct DecInstruction {
@@ -210,9 +208,6 @@ fn decode_immediate_stype(imm5: u32, imm12: u32) -> i64 {
 fn lui(curcpu: &mut Cpu, rd: RegIndex, imm: u32) {
     let imm64: i64 = (imm << 12) as i32 as i64;
     curcpu.write_reg(rd, imm64 as u64);
-    // If the CPU is in debug mode print the debug string
-    curcpu.debug(format!("{} {}, {}",
-                "lui".red(), REG_FILE_NAMES[rd as usize].blue(), imm64));
 }
 
 // AUIPC instruction
@@ -225,9 +220,6 @@ fn auipc(curcpu: &mut Cpu, rd: RegIndex, imm: u32) {
     // immediate is sign-extended to 64 bits and shifted left
     let second_operand: i64 = (imm as i32 as i64) << 12;
     curcpu.write_reg(rd, first_operand.wrapping_add(second_operand) as u64);
-    // If the CPU is in debug mode print the debug string
-    curcpu.debug(format!("{} {}, {}",
-                "auipc".red(), REG_FILE_NAMES[rd as usize].blue(), second_operand));
 }
 
 // JAL instruction
@@ -242,9 +234,6 @@ fn jal(curcpu: &mut Cpu, rd: RegIndex, imm: u32) {
     // The immediate - instead - needs to be added to this PC
     let imm64: i64 = decode_immediate_jtype(imm);
     curcpu.set_next_pc_rel(imm64);
-    // If the CPU is in debug mode print the debug string
-    curcpu.debug(format!("{} {}, {}",
-                "jal".red(), REG_FILE_NAMES[rd as usize].blue(), imm64));
 }
 
 // JALR instruction
@@ -259,9 +248,6 @@ fn jalr(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm: u32) {
     let second_operand: i64 = imm as i32 as i64;
     // Mask the resulting PC with 0xfff...ffe so that it is always an even number
     curcpu.set_next_pc_abs(((first_operand + second_operand) & !0x1) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "jalr".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), second_operand));
 }
 
 // BEQ instruction
@@ -273,10 +259,6 @@ fn beq(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, imm5: u32, imm12: u32) {
     if curcpu.read_reg(rs1) == curcpu.read_reg(rs2) {
         curcpu.set_next_pc_rel(imm64);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "beq".red(), REG_FILE_NAMES[rs1 as usize].blue(),
-                REG_FILE_NAMES[rs2 as usize].blue(), imm64));
 }
 
 // BNE instruction
@@ -288,10 +270,6 @@ fn bne(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, imm5: u32, imm12: u32) {
     if curcpu.read_reg(rs1) != curcpu.read_reg(rs2) {
         curcpu.set_next_pc_rel(imm64);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "bne".red(), REG_FILE_NAMES[rs1 as usize].blue(),
-                REG_FILE_NAMES[rs2 as usize].blue(), imm64));
 }
 
 // BLT instruction
@@ -303,10 +281,6 @@ fn blt(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, imm5: u32, imm12: u32) {
     if (curcpu.read_reg(rs1) as i64) < curcpu.read_reg(rs2) as i64 {
         curcpu.set_next_pc_rel(imm64);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "blt".red(), REG_FILE_NAMES[rs1 as usize].blue(),
-                 REG_FILE_NAMES[rs2 as usize].blue(), imm64));
 }
 
 // BGE instruction
@@ -318,10 +292,6 @@ fn bge(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, imm5: u32, imm12: u32) {
     if curcpu.read_reg(rs1) as i64 >= curcpu.read_reg(rs2) as i64 {
         curcpu.set_next_pc_rel(imm64);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "bge".red(), REG_FILE_NAMES[rs1 as usize].blue(),
-                REG_FILE_NAMES[rs2 as usize].blue(), imm64));
 }
 
 // BLTU instruction
@@ -333,10 +303,6 @@ fn bltu(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, imm5: u32, imm12: u32) {
     if curcpu.read_reg(rs1) < curcpu.read_reg(rs2) {
         curcpu.set_next_pc_rel(imm64);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "bltu".red(), REG_FILE_NAMES[rs1 as usize].blue(),
-                REG_FILE_NAMES[rs2 as usize].blue(), imm64));
 }
 
 // BGEU instruction
@@ -348,10 +314,6 @@ fn bgeu(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, imm5: u32, imm12: u32) {
     if curcpu.read_reg(rs1) >= curcpu.read_reg(rs2) {
         curcpu.set_next_pc_rel(imm64);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "bgeu".red(), REG_FILE_NAMES[rs1 as usize].blue(),
-                REG_FILE_NAMES[rs2 as usize].blue(), imm64));
 }
 
 // LB instruction
@@ -361,10 +323,6 @@ fn lb(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: i64 = curcpu.load(addr, AccessSize::BYTE) as i8 as i64;
     curcpu.write_reg(rd, data as u64);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "lb".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // LH instruction
@@ -374,9 +332,6 @@ fn lh(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: i64 = curcpu.load(addr, AccessSize::HALFWORD) as i16 as i64;
     curcpu.write_reg(rd, data as u64);
-    curcpu.debug(format!("{} {}, {}({})",
-                "lh".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // LW instruction
@@ -386,10 +341,6 @@ fn lw(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: i64 = curcpu.load(addr, AccessSize::WORD) as i32 as i64;
     curcpu.write_reg(rd, data as u64);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "lw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // LD instruction
@@ -399,10 +350,6 @@ fn ld(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: u64 = curcpu.load(addr, AccessSize::DOUBLEWORD);
     curcpu.write_reg(rd, data);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "ld".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // LBU instruction
@@ -412,10 +359,6 @@ fn lbu(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: u64 = curcpu.load(addr, AccessSize::BYTE);
     curcpu.write_reg(rd, data);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "lbu".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // LHU instruction
@@ -425,10 +368,6 @@ fn lhu(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: u64 = curcpu.load(addr, AccessSize::HALFWORD);
     curcpu.write_reg(rd, data);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "lhu".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // LWU instruction
@@ -438,10 +377,6 @@ fn lwu(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm12 as i32 as i64) as u64;
     let data: u64 = curcpu.load(addr, AccessSize::WORD);
     curcpu.write_reg(rd, data);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "lwu".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize].blue(), imm12 as i32 as i64));
 }
 
 // SB instruction
@@ -453,10 +388,6 @@ fn sb(curcpu: &mut Cpu, rs1: RegIndex, imm12: u32, imm5: u32) {
     let imm: i64 = decode_immediate_stype(imm5, imm12);
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm) as u64;
     curcpu.store(data, addr, AccessSize::BYTE);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "sb".red(), REG_FILE_NAMES[rs2 as usize].blue(), imm,
-                REG_FILE_NAMES[rs1 as usize]));
 }
 
 // SH instruction
@@ -468,10 +399,6 @@ fn sh(curcpu: &mut Cpu, rs1: RegIndex, imm12: u32, imm5: u32) {
     let imm: i64 = decode_immediate_stype(imm5, imm12);
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm) as u64;
     curcpu.store(data, addr, AccessSize::HALFWORD);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "sh".red(), REG_FILE_NAMES[rs2 as usize].blue(), imm,
-                REG_FILE_NAMES[rs1 as usize]));
 }
 
 // SW instruction
@@ -483,10 +410,6 @@ fn sw(curcpu: &mut Cpu, rs1: RegIndex, imm12: u32, imm5: u32) {
     let imm: i64 = decode_immediate_stype(imm5, imm12);
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm) as u64;
     curcpu.store(data, addr, AccessSize::WORD);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "sw".red(), REG_FILE_NAMES[rs2 as usize].blue(), imm,
-                REG_FILE_NAMES[rs1 as usize]));
 }
 
 // SD instruction
@@ -498,10 +421,6 @@ fn sd(curcpu: &mut Cpu, rs1: RegIndex, imm12: u32, imm5: u32) {
     let imm: i64 = decode_immediate_stype(imm5, imm12);
     let addr: u64 = (curcpu.read_reg(rs1) as i64 + imm) as u64;
     curcpu.store(data, addr, AccessSize::DOUBLEWORD);
-
-    curcpu.debug(format!("{} {}, {}({})",
-                "sd".red(), REG_FILE_NAMES[rs2 as usize].blue(), imm,
-                REG_FILE_NAMES[rs1 as usize]));
 }
 
 // ADDI instruction
@@ -511,10 +430,6 @@ fn addi(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: i64 = imm12 as i32 as i64;
     curcpu.write_reg(rd, (first_operand + second_operand) as u64);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "addi".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // SLTI instruction
@@ -528,10 +443,6 @@ fn slti(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     } else {
         curcpu.write_reg(rd, 0x0);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "slti".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // SLTIU instruction
@@ -545,10 +456,6 @@ fn sltiu(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     } else {
         curcpu.write_reg(rd, 0x0);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sltiu".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // XORI instruction
@@ -558,10 +465,6 @@ fn xori(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: i64 = imm12 as i32 as i64;
     curcpu.write_reg(rd, (first_operand ^ second_operand) as u64);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "xori".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // ORI instruction
@@ -571,10 +474,6 @@ fn ori(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: i64 = imm12 as i32 as i64;
     curcpu.write_reg(rd, (first_operand | second_operand) as u64);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "ori".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // SLLI instruction
@@ -584,10 +483,6 @@ fn slli(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: u64 = curcpu.read_reg(rs1);
     let second_operand: u8 = (imm12 & 0x3f) as u8;
     curcpu.write_reg(rd, first_operand << second_operand);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "slli".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // SLLIW instruction
@@ -597,10 +492,6 @@ fn slliw(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: u64 = curcpu.read_reg(rs1);
     let second_operand: u8 = (imm12 & 0x1f) as u8;
     curcpu.write_reg(rd, first_operand << second_operand);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "slliw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // SRLI and SRAI instruction
@@ -613,14 +504,8 @@ fn srli_srai(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     // if the 11th bit of the immediate is 0b1 -> SRAI, otherwise SRLI
     if imm12 >> 10 == 0b1 {
         curcpu.write_reg(rd, (first_operand >> second_operand) as u64);
-        curcpu.debug(format!("{} {}, {}, {}",
-                    "srai".red(), REG_FILE_NAMES[rd as usize].blue(),
-                    REG_FILE_NAMES[rs1 as usize], second_operand));
     } else {
         curcpu.write_reg(rd, first_operand >> second_operand);
-        curcpu.debug(format!("{} {}, {}, {}",
-                    "srli".red(), REG_FILE_NAMES[rd as usize].blue(),
-                    REG_FILE_NAMES[rs1 as usize], second_operand));
     }
 }
 
@@ -634,14 +519,9 @@ fn srliw_sraiw(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     // if the 11th bit of the immediate is 0b1 -> SRAIW, otherwise SRLIW
     if imm12 >> 10 == 0b1 {
         curcpu.write_reg(rd, (first_operand >> second_operand) as u64);
-        curcpu.debug(format!("{} {}, {}, {}",
-                    "sraiw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                    REG_FILE_NAMES[rs1 as usize], second_operand));
+
     } else {
         curcpu.write_reg(rd, first_operand >> second_operand);
-        curcpu.debug(format!("{} {}, {}, {}",
-                    "srliw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                    REG_FILE_NAMES[rs1 as usize], second_operand));
     }
 }
 
@@ -652,9 +532,6 @@ fn andi(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: i64 = imm12 as i32 as i64;
     curcpu.write_reg(rd, (first_operand & second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "andi".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], second_operand));
 }
 
 // ADD instruction
@@ -664,9 +541,6 @@ fn add(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: i64 = curcpu.read_reg(rs2) as i64;
     curcpu.write_reg(rd, (first_operand + second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "add".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // ADDW instruction
@@ -676,9 +550,6 @@ fn addw(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: i32 = curcpu.read_reg(rs1) as i32;
     let second_operand: i32 = curcpu.read_reg(rs2) as i32;
     curcpu.write_reg(rd, (first_operand + second_operand) as i64 as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "addw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SUB instruction
@@ -688,9 +559,6 @@ fn sub(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: i64 = curcpu.read_reg(rs2) as i64;
     curcpu.write_reg(rd, (first_operand - second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sub".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SUBW instruction
@@ -700,9 +568,6 @@ fn subw(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: i32 = curcpu.read_reg(rs1) as i32;
     let second_operand: i32 = curcpu.read_reg(rs2) as i32;
     curcpu.write_reg(rd, (first_operand - second_operand) as i64 as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "subw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SLL instruction
@@ -710,9 +575,6 @@ fn subw(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
 #[inline(always)]
 fn sll(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     curcpu.write_reg(rd, curcpu.read_reg(rs1) << (curcpu.read_reg(rs2) & 0x3f));
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sll".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SLLW instruction
@@ -722,9 +584,6 @@ fn sllw(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: u32 = curcpu.read_reg(rs1) as u32;
     let second_operand: u64= curcpu.read_reg(rs2) & 0x1f;
     curcpu.write_reg(rd, (first_operand << second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sllw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SLT instruction
@@ -737,10 +596,6 @@ fn slt(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     } else {
         curcpu.write_reg(rd, 0b0);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "slt".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SLTU instruction
@@ -752,10 +607,6 @@ fn sltu(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     } else {
         curcpu.write_reg(rd, 0b0);
     }
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sltu".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // XOR instruction
@@ -763,9 +614,6 @@ fn sltu(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
 #[inline(always)]
 fn xor(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     curcpu.write_reg(rd, curcpu.read_reg(rs1) ^ (curcpu.read_reg(rs2)));
-    curcpu.debug(format!("{} {}, {}, {}",
-                "xor".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // OR instruction
@@ -773,9 +621,6 @@ fn xor(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
 #[inline(always)]
 fn or(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     curcpu.write_reg(rd, curcpu.read_reg(rs1) | (curcpu.read_reg(rs2)));
-    curcpu.debug(format!("{} {}, {}, {}",
-                "or".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // AND instruction
@@ -783,36 +628,30 @@ fn or(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
 #[inline(always)]
 fn and(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     curcpu.write_reg(rd, curcpu.read_reg(rs1) & (curcpu.read_reg(rs2)));
-    curcpu.debug(format!("{} {}, {}, {}",
-                "and".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // FENCE instruction
 // Does not do anything because the CPU executes memory accesses in the program order anyway
 #[inline(always)]
-fn fence(curcpu: &mut Cpu) {
+fn fence(_curcpu: &mut Cpu) {
     // Placeholder, just in case I have the crazy idea to support OoO execution
-    curcpu.debug(format!("{}", "fence".red()));
 }
 
 // FENCEI instruction
 // Does not do anything because the CPU executes memory accesses in the program order anyway
 #[inline(always)]
-fn fencei(curcpu: &mut Cpu) {
+fn fencei(_curcpu: &mut Cpu) {
     // Placeholder, just in case I have the crazy idea to support OoO execution
-    curcpu.debug(format!("{}", "fencei".red()));
 }
 
 // ECALL and EBREAK instruction
 // Not implemented yet
-fn ecall_ebreak(curcpu: &mut Cpu, imm12: u32) {
+#[inline(always)]
+fn ecall_ebreak(_curcpu: &mut Cpu, imm12: u32) {
     if imm12 & 0x1 == 0x1 {
         // EBREAK
-        curcpu.debug(format!("{}", "ebreak".red()));
     } else {
         // ECALL
-        curcpu.debug(format!("{}", "ecall".red()));
     }
 }
 
@@ -825,9 +664,6 @@ fn csrrw(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
         curcpu.write_reg(rd, curcpu.read_csreg(imm12 as u16));
     }
     curcpu.write_csreg(imm12 as u16, curcpu.read_reg(rs1));
-    curcpu.debug(format!("{} {}, {}, {}",
-                "csrrw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], imm12 as u16));
 }
 
 // CSRRS instruction
@@ -840,9 +676,6 @@ fn csrrs(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
         curcpu.write_reg(rd, csr_data);
     }
     curcpu.write_csreg(imm12 as u16, curcpu.read_reg(rs1) | csr_data);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "csrrs".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], imm12 as u16));
 }
 
 // CSRRC instruction
@@ -855,9 +688,6 @@ fn csrrc(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
         curcpu.write_reg(rd, csr_data);
     }
     curcpu.write_csreg(imm12 as u16, !curcpu.read_reg(rs1) & csr_data);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "csrrc".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], imm12 as u16));
 }
 
 // CSRRWI instruction
@@ -869,10 +699,6 @@ fn csrrwi(curcpu: &mut Cpu, rs1: u8, rd: RegIndex, imm12: u32) {
         curcpu.write_reg(rd, curcpu.read_csreg(imm12 as u16));
     }
     curcpu.write_csreg(imm12 as u16, (rs1 & 0x1f) as u64);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "csrrwi".red(), REG_FILE_NAMES[rd as usize].blue(),
-                rs1 & 0x1f, imm12 as u16));
 }
 
 // CSRRSI instruction
@@ -885,10 +711,6 @@ fn csrrsi(curcpu: &mut Cpu, rs1: u8, rd: RegIndex, imm12: u32) {
         curcpu.write_reg(rd, csr_data);
     }
     curcpu.write_csreg(imm12 as u16, (rs1 & 0x1f) as u64 | csr_data);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "csrrsi".red(), REG_FILE_NAMES[rd as usize].blue(),
-                rs1 & 0x1f, imm12 as u16));
 }
 
 // CSRRCI instruction
@@ -901,10 +723,6 @@ fn csrrci(curcpu: &mut Cpu, rs1: u8, rd: RegIndex, imm12: u32) {
         curcpu.write_reg(rd, csr_data);
     }
     curcpu.write_csreg(imm12 as u16, !((rs1 & 0x1f) as u64) & csr_data);
-
-    curcpu.debug(format!("{} {}, {}, {}",
-                "csrrci".red(), REG_FILE_NAMES[rd as usize].blue(),
-                rs1 & 0x1f, imm12 as u16));
 }
 
 // SRL instruction
@@ -912,9 +730,6 @@ fn csrrci(curcpu: &mut Cpu, rs1: u8, rd: RegIndex, imm12: u32) {
 #[inline(always)]
 fn srl(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     curcpu.write_reg(rd, curcpu.read_reg(rs1) >> (curcpu.read_reg(rs2) & 0x3f));
-    curcpu.debug(format!("{} {}, {}, {}",
-                "srl".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SRLW instruction
@@ -924,9 +739,6 @@ fn srlw(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: u32 = curcpu.read_reg(rs1) as u32;
     let second_operand: u64= curcpu.read_reg(rs2) & 0x1f;
     curcpu.write_reg(rd, (first_operand >> second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "srlw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SRA instruction
@@ -936,9 +748,6 @@ fn sra(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: i64 = curcpu.read_reg(rs1) as i64;
     let second_operand: u64= curcpu.read_reg(rs2) & 0x3f;
     curcpu.write_reg(rd, (first_operand >> second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sra".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // SRAW instruction
@@ -948,9 +757,6 @@ fn sraw(curcpu: &mut Cpu, rs1: RegIndex, rs2: RegIndex, rd: RegIndex) {
     let first_operand: i32 = curcpu.read_reg(rs1) as i32;
     let second_operand: u64= curcpu.read_reg(rs2) & 0x1f;
     curcpu.write_reg(rd, (first_operand >> second_operand) as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "sraw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], REG_FILE_NAMES[rs2 as usize]));
 }
 
 // ADDI instruction
@@ -960,9 +766,6 @@ fn addiw(curcpu: &mut Cpu, rs1: RegIndex, rd: RegIndex, imm12: u32) {
     let first_operand: i32 = (curcpu.read_reg(rs1) & 0xffffffff) as i32;
     let second_operand: i32 = imm12 as i32;
     curcpu.write_reg(rd, (first_operand + second_operand) as i64 as u64);
-    curcpu.debug(format!("{} {}, {}, {}",
-                "addiw".red(), REG_FILE_NAMES[rd as usize].blue(),
-                REG_FILE_NAMES[rs1 as usize], imm12 as i32));
 }
 
 #[cfg(test)]
@@ -1045,6 +848,4 @@ mod tests {
         lbu(&mut cpu, 0x0, 0x2, 0x4);
         assert_eq!(cpu.read_reg(0x1), cpu.read_reg(0x2));
     }
-
-
 }

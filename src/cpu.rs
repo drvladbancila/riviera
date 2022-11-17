@@ -106,13 +106,6 @@ impl Cpu {
         println!("");
     }
 
-    #[inline(always)]
-    pub fn debug(&mut self, instruction_string: String) {
-        if self.debug_mode {
-            self.debug_string = instruction_string
-        }
-    }
-
     pub fn set_debug_mode(&mut self) {
         self.debug_mode = true;
     }

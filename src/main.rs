@@ -70,7 +70,7 @@ fn main() {
     emu.load_program(args.elf.as_str());
     println!("{} ELF loaded correctly", "[*]".green());
 
-
+    // Check if interactive mode is on
     if args.interactive {
         (execution_time, instr_count) = emu.interactive_run()
     } else {
@@ -79,7 +79,7 @@ fn main() {
 
     // If execution is over, print the total runtime
     mips = (instr_count as f64/1e6)/execution_time.as_secs_f64();
-    println!("{} Execution is over ({:.2?})", "[*]".green(), execution_time);
+    println!("{} Execution is over", "[*]".green());
     println!("{} T = {:.2?}, IC = {} ({:.6?} MIPS)",
              "[*]".green(), execution_time, instr_count, mips);
 

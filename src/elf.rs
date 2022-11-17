@@ -12,7 +12,7 @@ impl AddressSpace {
     const DATA_START_DEFAULT: usize = 0x00020000;
     pub fn new() -> AddressSpace {
         AddressSpace {
-            read_execute_segment: AddressSpace::TEXT_START_DEFAULT, 
+            read_execute_segment: AddressSpace::TEXT_START_DEFAULT,
             read_execute_size: 0,
             read_execute_offset: 0,
             read_write_segment: AddressSpace::DATA_START_DEFAULT,
@@ -60,9 +60,9 @@ impl ElfHeader {
     const EPHOFF_OFF:     usize = 0x20;
     // e_shoff: offset to the section header table in the ELF file
     const ESHOFF_OFF:     usize = 0x28;
-    // e_flags: processor-specific flags 
+    // e_flags: processor-specific flags
     const EFLAGS_OFF:     usize = 0x30;
-    // e_ehsize: ELF header's size 
+    // e_ehsize: ELF header's size
     const EEHSIZE_OFF:    usize = 0x34;
     // e_phentsize: size in bytes of one entry in the program header table
     const EPHENTSIZE_OFF: usize = 0x36;
@@ -75,16 +75,18 @@ impl ElfHeader {
     // e_shstrndx: section header table index of the table with section name table
     const ESHSTRNDX_OFF:  usize = 0x3E;
 
+    /// Create new ELF Header
     fn new() -> ElfHeader {
         ElfHeader { e_ident: [0; ElfHeader::EI_NIDENT],
-            e_type:  0, e_machine:   0, e_version:   0, 
-            e_entry: 0, e_phoff:     0, e_shoff:     0, 
-            e_flags: 0, e_ehsize:    0, e_phentsize: 0, 
-            e_phnum: 0, e_shentsize: 0, e_shnum:     0, 
-            e_shstrndx: 0 
+            e_type:  0, e_machine:   0, e_version:   0,
+            e_entry: 0, e_phoff:     0, e_shoff:     0,
+            e_flags: 0, e_ehsize:    0, e_phentsize: 0,
+            e_phnum: 0, e_shentsize: 0, e_shnum:     0,
+            e_shstrndx: 0
         }
     }
 
+    /// Fill ELF header from byte buffer
     fn from_buffer(&mut self, buf: &[u8]) {
         self.e_ident.clone_from_slice(&buf[ElfHeader::EIDENT_OFF..ElfHeader::EIDENT_OFF + ElfHeader::EI_NIDENT]);
         self.e_type =      u16::from_le_bytes(buf[ElfHeader::ETYPE_OFF..ElfHeader::ETYPE_OFF + 2].try_into().unwrap());
@@ -129,6 +131,7 @@ impl ProgHeader {
     const PFLAGS_WRITE: u32 = 0x2;
     const PFLAGS_EXEC:  u32 = 0x1;
 
+    /// Create new Program Header
     fn new() -> ProgHeader {
         ProgHeader {
             p_type:  0, p_flags: 0, p_offset: 0,
@@ -136,6 +139,7 @@ impl ProgHeader {
             p_memsz: 0, p_align: 0 }
     }
 
+    /// Fill program header from byte buffer
     fn from_buffer(&mut self, buf: &[u8]) {
         self.p_type =   u32::from_le_bytes(buf[ProgHeader::PTYPE_OFF..ProgHeader::PTYPE_OFF + 4].try_into().unwrap());
         self.p_flags =  u32::from_le_bytes(buf[ProgHeader::PFLAGS_OFF..ProgHeader::PFLAGS_OFF + 4].try_into().unwrap());
@@ -154,6 +158,7 @@ pub struct Elf {
 }
 
 impl Elf {
+    /// Create new ELF
     pub fn new() -> Elf {
         Elf {
             elf_header: ElfHeader::new(),
@@ -172,7 +177,7 @@ impl Elf {
             let hdr_offset_byte: usize = self.elf_header.e_phoff as usize;
             let hdr_size_bytes: usize = self.elf_header.e_phentsize as usize;
             let hdr_start_byte: usize = hdr_offset_byte + hdr_size_bytes*i;
-    
+
             program_header_i.from_buffer(&buf[hdr_start_byte..hdr_start_byte + hdr_size_bytes]);
             if program_header_i.p_type == ProgHeader::PTYPE_LOAD {
                 self.program_headers.push(program_header_i);
