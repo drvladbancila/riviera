@@ -81,26 +81,40 @@ impl Emulator {
         let mut instruction_count: u64 = 0;
 
         let now = std::time::Instant::now();
+        self.cpu.set_debug_mode();
         loop {
             let mut command_string: String = String::new();
             print!("> ");
             let _ = std::io::stdout().flush();
             std::io::stdin().read_line(&mut command_string).expect("could not read from stdin");
             command_tokens = command_string.split(" ");
-            let command_char: &str = command_tokens.next().expect("could not get ");
+            let command_char: &str = command_tokens.next().expect("could not get token");
             match command_char.trim() {
                 "s" =>
                 {
                     let second_arg: Option<&str> = command_tokens.next();
                     match second_arg {
                         Some(num_steps) =>
-                            instruction_count += self.cpu.cpu_loop_interactive(num_steps.trim().parse().expect("msg")),
+                        {
+                            match num_steps.trim().parse() {
+                                Ok(num_steps) => instruction_count += self.cpu.cpu_loop_interactive(num_steps),
+                                Err(err) => println!("Error: {}", err)
+                            }
+
+                        },
                         None => instruction_count += self.cpu.cpu_loop_interactive(1)
                     }
-
                 },
                 "r" => self.cpu.dump_regs(),
-                "c" => instruction_count += self.cpu.cpu_loop(),
+                "c" => { self.cpu.clear_debug_mode(); instruction_count += self.cpu.cpu_loop()},
+                "d" =>
+                {
+                    let second_arg: Option<&str> = command_tokens.next();
+                    match second_arg {
+                        Some(filename) => self.dump_memory_to_file(filename.trim()),
+                        None => println!("File name expected")
+                    }
+                }
                 "q" => break,
                 "h" => self.interactive_usage(),
                 _   => println!("Command not recognized: type h for help"),

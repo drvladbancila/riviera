@@ -106,8 +106,24 @@ impl Cpu {
         println!("");
     }
 
+    #[inline(always)]
     pub fn set_debug_mode(&mut self) {
         self.debug_mode = true;
+    }
+
+    #[inline(always)]
+    pub fn clear_debug_mode(&mut self) {
+        self.debug_mode = false;
+    }
+
+    #[inline(always)]
+    pub fn is_debug_mode(&self) -> bool {
+        self.debug_mode
+    }
+
+    #[inline(always)]
+    pub fn set_debug_string(&mut self, dec_instruction: String) {
+        self.debug_string = dec_instruction
     }
 
     // Get the current Program Counter
@@ -207,7 +223,6 @@ impl Cpu {
     }
 
     pub fn cpu_loop_interactive(&mut self, num_steps: u64) -> u64 {
-        self.set_debug_mode();
         let mut count_instructions: u64 = 0;
         for _i in 0..num_steps {
             if self.pc == Cpu::SENTINEL_RETURN_ADDRESS {
