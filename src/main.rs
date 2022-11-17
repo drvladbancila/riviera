@@ -10,13 +10,13 @@ mod elf;
 mod emulator;
 
 const BANNER: &str = "
-        d8b          d8b                          
-        Y8P          Y8P                          
-                                          
-888d888 888 888  888 888  .d88b.  888d888 8888b.  
-888P    888 888  888 888 d8P  Y8b 888P       88b 
-888     888 Y88  88P 888 88888888 888    .d888888 
-888     888  Y8bd8P  888 Y8b.     888    888  888 
+        d8b          d8b
+        Y8P          Y8P
+
+888d888 888 888  888 888  .d88b.  888d888 8888b.
+888P    888 888  888 888 d8P  Y8b 888P       88b
+888     888 Y88  88P 888 88888888 888    .d888888
+888     888  Y8bd8P  888 Y8b.     888    888  888
 888     888   Y88P   888   Y8888  888     Y888888";
 
 #[derive(Parser)]
@@ -58,7 +58,7 @@ fn main() {
     let mips: f64;
     let mut emu: Emulator;
 
-    // If a memory size was specified with the -m flag, allocate a 
+    // If a memory size was specified with the -m flag, allocate a
     // DRAM vector with that size, otherwise the default value is taken
     if let Some(memsize) = args.memsize {
         emu = Emulator::new(Some(memsize as usize));
@@ -81,7 +81,7 @@ fn main() {
     // If execution is over, print the total runtime
     mips = (instr_count as f64/1e6)/execution_time.as_secs_f64();
     println!("{} Execution is over ({:.2?})", "[*]".green(), execution_time);
-    println!("{} T = {:.2?}, IC = {}, ({:.6?} MIPS)",
+    println!("{} T = {:.2?}, IC = {} ({:.6?} MIPS)",
              "[*]".green(), execution_time, instr_count, mips);
 
     // If the -d flag was used, dump all the DRAM in a binary file

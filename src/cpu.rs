@@ -25,14 +25,16 @@ pub type CSRegIndex  = u16;
 // pc      -> program counter
 // next_pc -> value of the next PC that will be assigned to PC at
 //            the end of the current cycle
-// bus     -> bus object that allows to interface with memory 
-//            and peripherals 
+// bus     -> bus object that allows to interface with memory
+//            and peripherals
 pub struct Cpu {
     regs: [u64; REG_FILE_SIZE],
     csregs: [u64; CS_REG_FILE_SIZE],
     pc: u64,
     next_pc: u64,
-    bus: bus::Bus
+    bus: bus::Bus,
+    debug_mode: bool,
+    debug_string: String
 }
 
 // Cpu struct methods implementation
@@ -53,6 +55,8 @@ impl Cpu {
             pc: PC_INITIAL_VALUE,
             next_pc: PC_INITIAL_VALUE,
             bus: bus::Bus::new(memsize),
+            debug_string: String::new(),
+            debug_mode: false,
         }
     }
 
@@ -100,6 +104,17 @@ impl Cpu {
             }
         }
         println!("");
+    }
+
+    #[inline(always)]
+    pub fn debug(&mut self, instruction_string: String) {
+        if self.debug_mode {
+            self.debug_string = instruction_string
+        }
+    }
+
+    pub fn set_debug_mode(&mut self) {
+        self.debug_mode = true;
     }
 
     // Get the current Program Counter
@@ -199,6 +214,7 @@ impl Cpu {
     }
 
     pub fn cpu_loop_with_reg_dump(&mut self, dump_period: u64) -> u64 {
+        self.set_debug_mode();
         let mut count_instructions: u64 = 0;
         loop {
             if self.pc == Cpu::SENTINEL_RETURN_ADDRESS {
@@ -211,6 +227,8 @@ impl Cpu {
             // Decode the instruction and call the function that implements
             // that instruction
             self.decode_and_execute(fetched_instruction);
+
+            println!("{}", self.debug_string);
 
             count_instructions += 1;
 

@@ -22,7 +22,7 @@ impl Emulator {
         let display = filepath.display();
         let mut filebuffer: Vec<u8> = Vec::new();
         let mut elf_file = Elf::new();
-        
+
         let mut file = match File::open(&filepath) {
             Err(why) => panic!("Could not open {}: {}", display, why),
             Ok(file) => file,
