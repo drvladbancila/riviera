@@ -1,9 +1,9 @@
 use std::time::Duration;
-
+use colored::Colorize;
 use crate::cpu::Cpu;
 use crate::elf::{Elf, AddressSpace};
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::Path;
 
 pub struct Emulator {
@@ -67,15 +67,55 @@ impl Emulator {
 
     }
 
-    pub fn run(&mut self, reg_dump_interval: u64) -> (Duration, u64) {
+    pub fn run(&mut self) -> (Duration, u64) {
         let now = std::time::Instant::now();
         let instruction_count: u64;
-        if reg_dump_interval > 0 {
-            instruction_count = self.cpu.cpu_loop_with_reg_dump(reg_dump_interval)
-        } else {
-            instruction_count = self.cpu.cpu_loop();
+
+        instruction_count = self.cpu.cpu_loop();
+        (now.elapsed(), instruction_count)
+    }
+
+    pub fn interactive_run(&mut self) -> (Duration, u64) {
+
+        let mut command_tokens;
+        let mut instruction_count: u64 = 0;
+
+        let now = std::time::Instant::now();
+        loop {
+            let mut command_string: String = String::new();
+            print!("> ");
+            let _ = std::io::stdout().flush();
+            std::io::stdin().read_line(&mut command_string).expect("could not read from stdin");
+            command_tokens = command_string.split(" ");
+            let command_char: &str = command_tokens.next().expect("could not get ");
+            match command_char.trim() {
+                "s" =>
+                {
+                    let second_arg: Option<&str> = command_tokens.next();
+                    match second_arg {
+                        Some(num_steps) =>
+                            instruction_count += self.cpu.cpu_loop_interactive(num_steps.trim().parse().expect("msg")),
+                        None => instruction_count += self.cpu.cpu_loop_interactive(1)
+                    }
+
+                },
+                "r" => self.cpu.dump_regs(),
+                "c" => instruction_count += self.cpu.cpu_loop(),
+                "q" => break,
+                "h" => self.interactive_usage(),
+                _   => println!("Command not recognized: type h for help"),
+            }
         }
         (now.elapsed(), instruction_count)
+
+    }
+
+    fn interactive_usage(&self) {
+        println!("Commands:");
+        println!("{}: step by <n> instuctions (if omitted, execute next instruction)", "s [<n>]".bold());
+        println!("{}: continue until executable is over", "c".bold());
+        println!("{}: dump registers", "r".bold());
+        println!("{}: quit interactive mode", "q".bold());
     }
 
     pub fn dump_memory_to_file(&self, filename: &str) {

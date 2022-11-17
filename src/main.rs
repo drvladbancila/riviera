@@ -34,6 +34,9 @@ struct CLIArguments {
     #[arg(short, long)]
     registers: Option<u64>,
 
+    #[arg(short, long)]
+    interactive: Option<bool>,
+
     /// RAM size for the emulator
     #[arg(short, long)]
     memsize: Option<u64>
@@ -70,12 +73,15 @@ fn main() {
     emu.load_program(args.elf.as_str());
     println!("{} ELF loaded correctly", "[*]".green());
 
-    // If a register dump period was specified, run the CPU loop where
-    // every N instructions the content of the register file is dumped
-    if let Some(dump_reg_period) = args.registers {
-        (execution_time, instr_count) = emu.run(dump_reg_period);
+
+    if let Some(interactive_mode) = args.interactive {
+        if interactive_mode == true {
+            (execution_time, instr_count) = emu.interactive_run()
+        } else {
+            (execution_time, instr_count) = emu.run();
+        }
     } else {
-        (execution_time, instr_count) = emu.run(0);
+        (execution_time, instr_count) = emu.run();
     }
 
     // If execution is over, print the total runtime

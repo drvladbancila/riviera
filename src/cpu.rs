@@ -213,12 +213,12 @@ impl Cpu {
         }
     }
 
-    pub fn cpu_loop_with_reg_dump(&mut self, dump_period: u64) -> u64 {
+    pub fn cpu_loop_interactive(&mut self, num_steps: u64) -> u64 {
         self.set_debug_mode();
         let mut count_instructions: u64 = 0;
-        loop {
+        for _i in 0..num_steps {
             if self.pc == Cpu::SENTINEL_RETURN_ADDRESS {
-                break count_instructions;
+                break;
             }
             // Fetch and instruction
             let fetched_instruction: Instruction = self.fetch();
@@ -232,14 +232,11 @@ impl Cpu {
 
             count_instructions += 1;
 
-            if count_instructions % dump_period == 0 {
-                self.dump_regs();
-            }
-
             // The executed instruction might have changed the next PC
             // from the PC + 4 value, now assign next PC to PC
             self.pc = self.next_pc;
         }
+        count_instructions
     }
 
     // Fetch function to read the next instruction to be executed
