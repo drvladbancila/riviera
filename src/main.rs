@@ -30,12 +30,9 @@ struct CLIArguments {
     #[arg(short, long)]
     dump: Option<String>,
 
-    /// Show registers every N instructions
+    /// Run in interactive mode
     #[arg(short, long)]
-    registers: Option<u64>,
-
-    #[arg(short, long)]
-    interactive: Option<bool>,
+    interactive: bool,
 
     /// RAM size for the emulator
     #[arg(short, long)]
@@ -74,12 +71,8 @@ fn main() {
     println!("{} ELF loaded correctly", "[*]".green());
 
 
-    if let Some(interactive_mode) = args.interactive {
-        if interactive_mode == true {
-            (execution_time, instr_count) = emu.interactive_run()
-        } else {
-            (execution_time, instr_count) = emu.run();
-        }
+    if args.interactive {
+        (execution_time, instr_count) = emu.interactive_run()
     } else {
         (execution_time, instr_count) = emu.run();
     }
