@@ -158,7 +158,8 @@ pub struct Elf {
 }
 
 impl Elf {
-    /// Create new ELF
+    /// Create new ELF, made of one ELF header and
+    /// a vector of program headers
     pub fn new() -> Elf {
         Elf {
             elf_header: ElfHeader::new(),
@@ -166,11 +167,16 @@ impl Elf {
         }
     }
 
+    /// Read ELF header from file buffer
+    /// buf: the file buffer
+    /// returns the entry point of the executable
     pub fn read_header(&mut self, buf: &[u8]) -> u64 {
         self.elf_header.from_buffer(buf);
         self.elf_header.e_entry
     }
 
+    /// Cycle through all the program headers in the executables
+    /// and saves them in the program header vector
     pub fn read_progheaders(&mut self, buf: &[u8]) {
         for i in 0..self.elf_header.e_phnum as usize {
             let mut program_header_i = ProgHeader::new();
@@ -185,6 +191,9 @@ impl Elf {
         }
     }
 
+    /// This function fills the AddressSpace data structure with the
+    /// virtual address of the executable segment and of the read/write segment
+    /// Moreover it saves the offset of those segments in the executable and their size
     pub fn get_addrspace(&self) -> AddressSpace {
         let mut addr_space: AddressSpace = AddressSpace::new();
         for hdr in &self.program_headers {
