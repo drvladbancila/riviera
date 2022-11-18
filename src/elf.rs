@@ -75,6 +75,24 @@ impl ElfHeader {
     // e_shstrndx: section header table index of the table with section name table
     const ESHSTRNDX_OFF:  usize = 0x3E;
 
+    const EIDENT_MAGIC: [u8; 4] = [0x7f, 0x45, 0x4C, 0x46];
+
+    const ELFCLASS64: u8        = 0x02;
+    const EICLASS_POS: usize    = 0x04;
+
+    const ELFDATA2LSB: u8       = 0x01;
+    const EIDATA_POS: usize     = 0x05;
+
+    const EIVERSION: u8         = 0x01;
+    const EIVERSION_POS: usize  = 0x06;
+
+    const ELFOSABI_SYSV: u8     = 0x00;
+    const EIOSABI_POS: usize    = 0x07;
+
+    const ET_EXEC: u16          = 0x02;
+    const EM_RISCV: u16         = 0xF3;
+    const EV_CURRENT: u32        = 0x01;
+
     /// Create new ELF Header
     fn new() -> ElfHeader {
         ElfHeader { e_ident: [0; ElfHeader::EI_NIDENT],
@@ -102,6 +120,42 @@ impl ElfHeader {
         self.e_shentsize = u16::from_le_bytes(buf[ElfHeader::ESHENTSIZE_OFF..ElfHeader::ESHENTSIZE_OFF + 2].try_into().unwrap());
         self.e_shnum =     u16::from_le_bytes(buf[ElfHeader::ESHNUM_OFF..ElfHeader::ESHNUM_OFF + 2].try_into().unwrap());
         self.e_shstrndx =  u16::from_le_bytes(buf[ElfHeader::ESHSTRNDX_OFF..ElfHeader::ESHSTRNDX_OFF + 2].try_into().unwrap());
+    }
+
+    fn check_header(&self) -> Result<String, String> {
+        if !self.e_ident.starts_with(&ElfHeader::EIDENT_MAGIC) {
+            return Err("File is not a valid ELF file: bad magic number".to_string());
+        }
+
+        if self.e_ident[ElfHeader::EICLASS_POS] != ElfHeader::ELFCLASS64 {
+            return Err("File is not compiled for 64 bit architectures".to_string());
+        }
+
+        if self.e_ident[ElfHeader::EIDATA_POS] != ElfHeader::ELFDATA2LSB {
+            return Err("File is not compiled for little endian architectures".to_string());
+        }
+
+        if self.e_ident[ElfHeader::EIVERSION_POS] != ElfHeader::EIVERSION {
+            return Err("Invalid ELF version".to_string());
+        }
+
+        if self.e_ident[ElfHeader::EIOSABI_POS] != ElfHeader::ELFOSABI_SYSV {
+            return Err("Target ABI is not System V".to_string());
+        }
+
+        if self.e_type != ElfHeader::ET_EXEC {
+            return Err("Not an executable ELF file".to_string());
+        }
+
+        if self.e_machine != ElfHeader::EM_RISCV {
+            return Err("File was not compiled for a RISC-V machine".to_string());
+        }
+
+        if self.e_version!= ElfHeader::EV_CURRENT {
+            return Err("Not an executable ELF file".to_string());
+        }
+
+        Ok("ELF loaded correctly".to_string())
     }
 }
 
@@ -170,9 +224,12 @@ impl Elf {
     /// Read ELF header from file buffer
     /// buf: the file buffer
     /// returns the entry point of the executable
-    pub fn read_header(&mut self, buf: &[u8]) -> u64 {
+    pub fn read_header(&mut self, buf: &[u8]) -> Result<u64, String> {
         self.elf_header.from_buffer(buf);
-        self.elf_header.e_entry
+        match self.elf_header.check_header() {
+            Ok(_string) => Ok(self.elf_header.e_entry),
+            Err(string)  => Err(string)
+        }
     }
 
     /// Cycle through all the program headers in the executables

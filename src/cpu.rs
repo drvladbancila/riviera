@@ -112,7 +112,7 @@ impl Cpu {
                self.last_used_register == (i as RegIndex) {
                 // Print register name and its contents as a 16-digit hex
                 let print_string: String = format!("{:4}: 0x{:0>16x}\t", rn.green(), r);
-                print!("{}", print_string.on_bright_yellow());
+                print!("{}", print_string.on_blue());
             } else {
                 // Print register name and its contents as a 16-digit hex
                 print!("{:4}: 0x{:0>16x}\t", rn.green(), r);

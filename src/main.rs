@@ -67,8 +67,11 @@ fn main() {
     }
 
     // Load ELF file into memory
-    emu.load_program(args.elf.as_str());
-    println!("{} ELF loaded correctly", "[*]".green());
+    match emu.load_program(args.elf.as_str()) {
+        Ok(()) => println!("{} ELF loaded correctly", "[*]".green()),
+        Err(err_string) => { eprintln!("{} {}", "[x]".red(), err_string); panic!()}
+    }
+
 
     // Check if interactive mode is on
     if args.interactive {

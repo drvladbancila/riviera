@@ -23,7 +23,7 @@ impl Emulator {
 
     /// Load ELF, parse it and setup the CPU for execution from a given
     /// file path
-    pub fn load_program(&mut self, filename: &str) {
+    pub fn load_program(&mut self, filename: &str) -> Result<(), String> {
         let filepath: &Path = Path::new(filename);
         let display = filepath.display();
         let mut filebuffer: Vec<u8> = Vec::new();
@@ -42,7 +42,11 @@ impl Emulator {
         }
 
         // Read ELF header and obtain entry point
-        let entry: u64 = elf_file.read_header(&filebuffer);
+        let entry_point: u64;
+        match elf_file.read_header(&filebuffer) {
+            Ok(entry) => entry_point = entry,
+            Err(err_string) => return Err(err_string),
+        }
 
         // Read all the program headers to set the address space
         elf_file.read_progheaders(&filebuffer);
@@ -66,7 +70,7 @@ impl Emulator {
                               addr_space.read_write_segment as u64);
 
         // Set initial value of the PC
-        self.cpu.set_pc(entry);
+        self.cpu.set_pc(entry_point);
 
         // Load sentinel value in RA. If a program executes the "ret" instruction and there is no
         // nowhere else to return but this value then the emulator will stop executing instructions
@@ -79,6 +83,7 @@ impl Emulator {
         // TODO: check if this is correct? Seems like it is, but not 100% sure
         self.cpu.write_reg(Cpu::GLOBAL_POINTER,
                      addr_space.read_write_segment as u64 + (self.cpu.get_read_write_memsize() as u64)/2);
+        Ok(())
 
     }
 
