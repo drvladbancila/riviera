@@ -29,6 +29,7 @@ pub type CSRegIndex  = u16;
 //            and peripherals
 pub struct Cpu {
     regs: [u64; REG_FILE_SIZE],
+    last_used_register: RegIndex,
     csregs: [u64; CS_REG_FILE_SIZE],
     pc: u64,
     next_pc: u64,
@@ -56,6 +57,7 @@ impl Cpu {
     pub fn new(memsize: Option<usize>) -> Cpu {
         Cpu {
             regs: [0; REG_FILE_SIZE],
+            last_used_register: 0,
             csregs: [0; CS_REG_FILE_SIZE],
             pc: PC_INITIAL_VALUE,
             next_pc: PC_INITIAL_VALUE,
@@ -69,6 +71,7 @@ impl Cpu {
     #[inline(always)]
     pub fn write_reg(&mut self, regi: RegIndex, data: u64) {
         self.regs[regi as usize] = data;
+        self.last_used_register = regi;
     }
 
     /// Function that reads data from a Cpu register
@@ -104,8 +107,16 @@ impl Cpu {
         // Cycle through all the registers...
         for r in self.regs {
             let rn: &str = REG_FILE_NAMES[i];
-            // Print register name and its contents as a 16-digit hex
-            print!("{:4}: 0x{:0>16x}\t", rn.green(), r);
+
+            if self.last_used_register != 0 &&
+               self.last_used_register == (i as RegIndex) {
+                // Print register name and its contents as a 16-digit hex
+                let print_string: String = format!("{:4}: 0x{:0>16x}\t", rn.green(), r);
+                print!("{}", print_string.on_bright_yellow());
+            } else {
+                // Print register name and its contents as a 16-digit hex
+                print!("{:4}: 0x{:0>16x}\t", rn.green(), r);
+            }
             i += 1;
             // Every 2 dumped registers print a new line
             if i % 2 == 0 {
