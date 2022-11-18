@@ -150,7 +150,7 @@ dependencies = [
 
 [[package]]
 name = "riviera"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "clap",
  "colored",
