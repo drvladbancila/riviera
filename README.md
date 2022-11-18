@@ -24,7 +24,7 @@ In order to get it running
 cargo run --release  -- <arguments>
 ```
 
-## Compiling and runnign executables
+## Compiling and running executables
 
 Programs need to be compiled without standard C library and (for now) with the `-march=rv64g` flag as this instructs the compiler to use only __non-compressed__ instructions (support may be added in the future).
 Like this:
@@ -68,6 +68,6 @@ cargo run --release -- tests/compiled/<testname> <other params...>
 
 ## TODOs
 
-- [ ] Spport for compressed instruction
+- [ ] Support for compressed instructions
 - [ ] Framebuffer for displaying user output
-- [ ] Module to extract statistics from running code 
+- [ ] Module to extract statistics from running code
