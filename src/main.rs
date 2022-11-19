@@ -8,6 +8,8 @@ mod memory;
 mod rv;
 mod elf;
 mod emulator;
+mod uart;
+mod cli;
 
 const BANNER: &str = "
         d8b          d8b
