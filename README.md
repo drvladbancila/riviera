@@ -6,7 +6,7 @@ As the name suggests, it is a RISC-V emulator written in Rust.
 
 It is currently a work in progress in the early stages and supports RV32I and RV64I.
 
-![riviera running](assets/execution.png)
+[![asciicast](https://asciinema.org/a/538760.svg)](https://asciinema.org/a/538760)
 
 As for now, I could get a performance of around 50-65 MIPS.
 
