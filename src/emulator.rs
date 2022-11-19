@@ -151,8 +151,13 @@ impl Emulator {
                 {
                     let second_arg: Option<&str> = command_tokens.next();
                     match second_arg {
-                        Some(filename) => self.dump_memory_to_file(filename.trim()),
-                        None => println!("File name expected")
+                        Some(filename) => {
+                            match self.dump_memory_to_file(filename.trim()) {
+                                Ok(res_string) => println!("{}", res_string),
+                                Err(res_string) => println!("{}", res_string)
+                            }
+                        }
+                        None => println!("Expected file name")
                     }
                 }
                 // q: quit interactive mode
@@ -170,14 +175,15 @@ impl Emulator {
     /// This function shows the usage of the interactive mode
     fn interactive_usage(&self) {
         println!("Commands:");
-        println!("{}: step by <n> instuctions (if omitted, execute next instruction)", "s [<n>]".bold());
-        println!("{}: continue until executable is over", "c".bold());
+        println!("{}: step by <n> instructions (if omitted, execute next instruction)", "s [<n>]".bold());
+        println!("{}: continue until all code is executed", "c".bold());
         println!("{}: dump registers", "r".bold());
+        println!("{}: dump memory content to binary file", "d <filename>".bold());
         println!("{}: quit interactive mode", "q".bold());
     }
 
     /// Dump the memory associated to the CPU to a file specified as a string
-    pub fn dump_memory_to_file(&self, filename: &str) {
+    pub fn dump_memory_to_file(&self, filename: &str) -> Result<String, String> {
         self.cpu.get_memory().dump_to_file(filename)
     }
 }

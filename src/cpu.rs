@@ -21,15 +21,19 @@ pub type CSRegIndex  = u16;
 
 // CPU structure: it represents a RISC-V processing element
 // Attributes:
-// regs    -> array of 64 bits elements representing the reg. file
-// pc      -> program counter
-// next_pc -> value of the next PC that will be assigned to PC at
-//            the end of the current cycle
-// bus     -> bus object that allows to interface with memory
-//            and peripherals
+// regs         -> array of 64 bits elements representing the reg. file
+// last_upd_reg -> last register that was written
+// pc           -> program counter
+// next_pc      -> value of the next PC that will be assigned to PC at
+//                 the end of the current cycle
+// bus          -> bus object that allows to interface with memory
+//                 and peripherals
+// debug_string -> string containing info about the instruction being executed
+// debug_mode   -> if true, the functions that implement the instructions
+//                 update the debug string
 pub struct Cpu {
     regs: [u64; REG_FILE_SIZE],
-    last_used_register: RegIndex,
+    last_updated_register: RegIndex,
     csregs: [u64; CS_REG_FILE_SIZE],
     pc: u64,
     next_pc: u64,
@@ -57,7 +61,7 @@ impl Cpu {
     pub fn new(memsize: Option<usize>) -> Cpu {
         Cpu {
             regs: [0; REG_FILE_SIZE],
-            last_used_register: 0,
+            last_updated_register: 0,
             csregs: [0; CS_REG_FILE_SIZE],
             pc: PC_INITIAL_VALUE,
             next_pc: PC_INITIAL_VALUE,
@@ -71,7 +75,7 @@ impl Cpu {
     #[inline(always)]
     pub fn write_reg(&mut self, regi: RegIndex, data: u64) {
         self.regs[regi as usize] = data;
-        self.last_used_register = regi;
+        self.last_updated_register = regi;
     }
 
     /// Function that reads data from a Cpu register
@@ -98,6 +102,12 @@ impl Cpu {
         }
     }
 
+    /// Returns true if the register index passes as a parameter
+    /// is equal to the last updated register
+    fn is_last_updated_register(&self, reg: RegIndex) -> bool {
+        (reg != 0) && (reg == self.last_updated_register)
+    }
+
     /// Function that displays the contents of all the registers
     pub fn dump_regs(&self) {
         let mut i: usize = 0;
@@ -107,10 +117,10 @@ impl Cpu {
         // Cycle through all the registers...
         for r in self.regs {
             let rn: &str = REG_FILE_NAMES[i];
-
-            if self.last_used_register != 0 &&
-               self.last_used_register == (i as RegIndex) {
+            // If the register is the last updated register
+            if self.is_last_updated_register(i as RegIndex) {
                 // Print register name and its contents as a 16-digit hex
+                // Print on a blue background to highlight the last-updated register
                 let print_string: String = format!("{:4}: 0x{:0>16x}\t", rn, r);
                 print!("{}", print_string.on_blue());
             } else {

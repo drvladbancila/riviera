@@ -45,18 +45,18 @@ impl Memory {
         };
     }
 
-    pub fn dump_to_file(&self, filename: &str) {
+    pub fn dump_to_file(&self, filename: &str) -> Result<String, String> {
         let filepath: &Path = Path::new(filename);
         let display = filepath.display();
 
         let mut file = match File::create(&filepath) {
-            Err(why) => panic!("Could not create {}: {}", display, why),
+            Err(why) => return Err(format!("Could not create {}: {}", display, why)),
             Ok(file) => file,
         };
 
         match file.write(&self.memory) {
-            Err(why) => panic!("Could not write memory buffer to {}: {}", display, why),
-            Ok(_) => ()
+            Err(why) => return Err(format!("Could not write memory buffer to {}: {}", display, why)),
+            Ok(_) => return Ok(format!("Successfully saved memory content to {}", filename))
         }
     }
 

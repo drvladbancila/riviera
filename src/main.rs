@@ -88,7 +88,10 @@ fn main() {
 
     // If the -d flag was used, dump all the DRAM in a binary file
     if let Some(dump_file) = args.dump.as_deref() {
-        emu.dump_memory_to_file(dump_file);
-        println!("{} Memory dump to file successful", "[*]".green());
+        match emu.dump_memory_to_file(dump_file) {
+            Err(res_str) => println!("{} {}", "[x]".red(), res_str),
+            Ok(res_str) => println!("{} {}", "[*]".green(), res_str)
+        }
+
     }
 }
