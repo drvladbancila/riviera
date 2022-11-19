@@ -2,17 +2,22 @@
 
 *riviera* stands for: **RI**SC-**V** **I**mprobable **E**mulator, **R**ust **A**ssisted.
 
-As the name suggests, it is a RISC-V emulator written in Rust.
-
-It is currently a work in progress in the early stages and supports RV32I and RV64I.
+As the name suggests, it is a RISC-V emulator written in Rust. It is currently a work in progress in the early stages and supports RV32I and RV64I.
 
 [![asciicast](https://asciinema.org/a/538760.svg)](https://asciinema.org/a/538760)
 
-As for now, I could get a performance of around 50-65 MIPS.
+## Features
+
+- it support the RV32I and RV64I instructions set
+- it can execute a 64 bit RISC-V compiled ELF at peak speed of about 60 MIPS
+- supports interactive mode: step manually through the instructions and dump content of the register file
+- interactive mode highlights the last register that was updated
+- it can dump the content of the data memory to a binary file
+- set the RAM size by command line arguments
 
 ## Building and running
 
-To get the emulator running, first clone the repo and then build it with cargo:
+To get the emulator running, first clone the repository and then build it with cargo:
 
 ```
 git clone https://github.com/drvladbancila/riviera
@@ -29,7 +34,7 @@ cargo run --release  -- <arguments>
 Programs need to be compiled without standard C library and (for now) with the `-march=rv64g` flag as this instructs the compiler to use only __non-compressed__ instructions (support may be added in the future).
 Like this:
 ```
-riscv64-unknown-linux-gnu-gcc -march=rv64g -nostdlib <file.c> -o <output_file>
+riscv64-unknown-linux-gnu-gcc -march=rv64g -nostdlib <files.c> -o <output_file>
 ```
 
 To run an ELF file and obtain execution time, number of instruction and MIPS:
