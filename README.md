@@ -8,7 +8,7 @@ As the name suggests, it is a RISC-V emulator written in Rust. It is currently a
 
 ## Features
 
-- it support the RV32I and RV64I instructions set
+- it supports the RV32I and RV64I instructions set
 - it can execute a 64 bit RISC-V compiled ELF at peak speed of about 60 MIPS
 - supports interactive mode: step manually through the instructions and dump content of the register file
 - interactive mode highlights the last register that was updated
