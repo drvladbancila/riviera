@@ -1,5 +1,6 @@
 use crate::cli::CLI;
 
+#[allow(dead_code)]
 pub struct UART {
     rhr: u8,
     thr: u8,
@@ -14,6 +15,7 @@ pub struct UART {
     terminal: CLI
 }
 
+#[allow(dead_code)]
 impl UART {
     const RHR_THR_ADDR: u8 = 0x0;
     const IER_ADDR:     u8 = 0x1;

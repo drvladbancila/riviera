@@ -5,6 +5,7 @@ pub struct CLI {
     input_buffer: String,
 }
 
+#[allow(dead_code)]
 impl CLI {
     pub fn new() -> CLI {
         CLI {
@@ -21,7 +22,7 @@ impl CLI {
 
     pub fn get_input(&mut self) {
         match std::io::stdin().read_line(&mut self.input_buffer) {
-            Ok(a) => (),
+            Ok(_a) => (),
             Err(err) => panic!("Could not get input: {}", err),
         }
     }
